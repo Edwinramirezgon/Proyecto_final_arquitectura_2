@@ -1,0 +1,52 @@
+# ─── Entorno ───────────────────────────────────────────────────────────────────
+.env
+/.amazonq
+
+# ─── Maven build output ────────────────────────────────────────────────────────
+target/
+**/target/
+*.class
+**/*.class
+*.jar
+**/*.jar
+*.war
+**/*.war
+*.ear
+**/*.ear
+
+# ─── Vaadin build output ───────────────────────────────────────────────────────
+node_modules/
+**/node_modules/
+**/frontend/generated/
+**/.pnpm-store/
+**/pnpmfile.cjs
+**/webpack.config.js
+**/webpack.generated.js
+**/.vaadin/
+
+# ─── IDE ───────────────────────────────────────────────────────────────────────
+.idea/
+**/.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+**/.vscode/
+*.code-workspace
+
+# ─── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# ─── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+**/*.log
+logs/
+**/logs/
+
+# ─── Docker volumes locales ────────────────────────────────────────────────────
+docker-volumes/
+
+# ─── GitHub workflows temporales ───────────────────────────────────────────────
+.github/
