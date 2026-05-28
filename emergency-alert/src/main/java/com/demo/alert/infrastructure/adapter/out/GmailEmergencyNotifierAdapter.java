@@ -153,6 +153,8 @@ public class GmailEmergencyNotifierAdapter implements EmergencyNotifierPort {
             throw new NotificationDeliveryException(to, e.getMessage());
         }
     }
+
+    private String buildAlertSubject(AlertNotification n) {
         return String.format("[%s] Alerta Ambiental — Zona %s — CO2: %.1f µg/m³",
                 n.getLevel(), n.getZoneId(), n.getAverageCo2());
     }
