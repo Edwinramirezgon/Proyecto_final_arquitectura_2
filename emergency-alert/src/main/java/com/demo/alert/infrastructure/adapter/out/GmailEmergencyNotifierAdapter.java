@@ -3,8 +3,10 @@ package com.demo.alert.infrastructure.adapter.out;
 import com.demo.alert.application.port.out.EmergencyNotifierPort;
 import com.demo.alert.domain.exception.NotificationDeliveryException;
 import com.demo.alert.domain.model.AlertNotification;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
 public class GmailEmergencyNotifierAdapter implements EmergencyNotifierPort {
 
@@ -144,11 +146,12 @@ public class GmailEmergencyNotifierAdapter implements EmergencyNotifierPort {
 
     private void sendHtml(String to, String subject, String htmlBody) {
         try {
-            SimpleMailMessage mail = new SimpleMailMessage();
-            mail.setTo(to);
-            mail.setSubject(subject);
-            mail.setText(htmlBody);
-            mailSender.send(mail);
+            MimeMessage msg = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(msg, false, "UTF-8");
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlBody, true);
+            mailSender.send(msg);
         } catch (Exception e) {
             throw new NotificationDeliveryException(to, e.getMessage());
         }
