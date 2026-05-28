@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { useSensors } from '../hooks/useSensors'
 import { useZones } from '../hooks/useZones'
+import Navbar from '../components/Navbar'
 
 // Fix Leaflet default icon
 delete L.Icon.Default.prototype._getIconUrl
@@ -99,7 +100,9 @@ export default function AdminSensorsPage() {
   if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Cargando sensores...</div>
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: '#f0f4f8' }}>
+      <Navbar />
+      <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ margin: 0 }}>Gestión de Sensores</h1>
         <button
@@ -421,6 +424,7 @@ export default function AdminSensorsPage() {
             No hay sensores registrados
           </div>
         )}
+      </div>
       </div>
     </div>
   )

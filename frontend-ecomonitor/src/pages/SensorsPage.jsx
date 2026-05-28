@@ -20,6 +20,7 @@ const SCENARIOS = [
   { value: 'normal',    label: '🟢 Normal (20–90 µg/m³)',        desc: 'Niveles seguros' },
   { value: 'warning',   label: '🟡 Advertencia (100–145 µg/m³)', desc: 'Niveles elevados' },
   { value: 'emergency', label: '🔴 Emergencia (155–215 µg/m³)',   desc: 'Supera umbral 150' },
+  { value: 'critical',  label: '🚨 Crítico — Hospital (155–215 µg/m³)', desc: 'Zona hospital → nivel CRITICAL' },
   { value: 'faulty',    label: '⚡ Sensor fallido (saltos)',       desc: 'Activa mantenimiento' },
 ]
 
