@@ -1,0 +1,28 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+
+  - job_name: 'pollution-analytics'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['pollution-analytics:8084']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  - job_name: 'auth-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['auth-service:8081']
+
+  - job_name: 'zone-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['zone-service:8082']
+
+  - job_name: 'emergency-alert'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['emergency-alert:8085']

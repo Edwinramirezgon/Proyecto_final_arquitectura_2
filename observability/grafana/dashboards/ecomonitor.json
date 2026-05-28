@@ -1,0 +1,321 @@
+{
+  "title": "EcoMonitor — Observabilidad Completa",
+  "uid": "ecomonitor-obs",
+  "schemaVersion": 38,
+  "version": 2,
+  "refresh": "10s",
+  "time": { "from": "now-30m", "to": "now" },
+  "tags": ["ecomonitor"],
+  "panels": [
+
+    { "id": 100, "type": "text", "title": "📊 PILAR 1 — LATENCIA",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 2 },
+      "options": { "content": "## Latencia de requests HTTP por servicio", "mode": "markdown" } },
+
+    {
+      "id": 1, "title": "Latencia P50 por servicio (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 2, "w": 8, "h": 8 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "histogram_quantile(0.50, sum(rate(http_server_requests_seconds_bucket[1m])) by (le, application)) * 1000",
+        "legendFormat": "{{application}} P50"
+      }],
+      "fieldConfig": { "defaults": { "unit": "ms", "color": { "mode": "palette-classic" } } }
+    },
+
+    {
+      "id": 2, "title": "Latencia P95 por servicio (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 2, "w": 8, "h": 8 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[1m])) by (le, application)) * 1000",
+        "legendFormat": "{{application}} P95"
+      }],
+      "fieldConfig": { "defaults": { "unit": "ms" } }
+    },
+
+    {
+      "id": 3, "title": "Latencia P99 por servicio (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 16, "y": 2, "w": 8, "h": 8 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket[1m])) by (le, application)) * 1000",
+        "legendFormat": "{{application}} P99"
+      }],
+      "fieldConfig": { "defaults": { "unit": "ms",
+        "thresholds": { "mode": "absolute", "steps": [
+          { "color": "green", "value": null },
+          { "color": "yellow", "value": 200 },
+          { "color": "red", "value": 500 }
+        ]}
+      }}
+    },
+
+    {
+      "id": 4, "title": "Requests por segundo por servicio",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 10, "w": 12, "h": 7 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "sum(rate(http_server_requests_seconds_count[1m])) by (application)",
+        "legendFormat": "{{application}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "reqps" } }
+    },
+
+    {
+      "id": 5, "title": "Errores HTTP 4xx / 5xx",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 10, "w": 12, "h": 7 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "sum(rate(http_server_requests_seconds_count{status=~\"4..|5..\"}[1m])) by (application, status)",
+        "legendFormat": "{{application}} {{status}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "reqps",
+        "color": { "fixedColor": "red", "mode": "fixed" }
+      }}
+    },
+
+    {
+      "id": 6, "title": "Estado Circuit Breakers (pollution-analytics)",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 17, "w": 8, "h": 5 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "resilience4j_circuitbreaker_state{application=\"pollution-analytics\"}",
+        "legendFormat": "{{name}}"
+      }],
+      "fieldConfig": { "defaults": {
+        "mappings": [
+          { "type": "value", "options": { "0": { "text": "CLOSED ✅", "color": "green" } } },
+          { "type": "value", "options": { "1": { "text": "OPEN 🔴",   "color": "red"   } } },
+          { "type": "value", "options": { "2": { "text": "HALF ⚠️",   "color": "yellow"} } }
+        ]
+      }}
+    },
+
+    {
+      "id": 7, "title": "Lecturas de sensores procesadas",
+      "type": "stat",
+      "gridPos": { "x": 8, "y": 17, "w": 16, "h": 5 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "sum(http_server_requests_seconds_count{application=\"pollution-analytics\", uri=\"/sensors/readings\", method=\"POST\"})",
+        "legendFormat": "Total lecturas"
+      }],
+      "fieldConfig": { "defaults": { "unit": "short",
+        "color": { "fixedColor": "blue", "mode": "fixed" }
+      }}
+    },
+
+    { "id": 200, "type": "text", "title": "📝 PILAR 2 — LOGS",
+      "gridPos": { "x": 0, "y": 22, "w": 24, "h": 2 },
+      "options": { "content": "## Logs en tiempo real de los microservicios", "mode": "markdown" } },
+
+    {
+      "id": 9, "title": "Logs — pollution-analytics",
+      "type": "logs",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 10 },
+      "targets": [{
+        "datasource": {"type": "loki", "uid": "loki"},
+        "expr": "{service=\"pollution-analytics\"}",
+        "legendFormat": ""
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none",
+        "enableLogDetails": true
+      }
+    },
+
+    {
+      "id": 10, "title": "Logs — auth-service",
+      "type": "logs",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 10 },
+      "targets": [{
+        "datasource": {"type": "loki", "uid": "loki"},
+        "expr": "{service=\"auth-service\"}",
+        "legendFormat": ""
+      }],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      }
+    },
+
+    {
+      "id": 11, "title": "Logs — zone-service",
+      "type": "logs",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "gridPos": { "x": 0, "y": 34, "w": 12, "h": 10 },
+      "targets": [{
+        "datasource": {"type": "loki", "uid": "loki"},
+        "expr": "{service=\"zone-service\"}",
+        "legendFormat": ""
+      }],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      }
+    },
+
+    {
+      "id": 12, "title": "Logs — emergency-alert",
+      "type": "logs",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "gridPos": { "x": 12, "y": 34, "w": 12, "h": 10 },
+      "targets": [{
+        "datasource": {"type": "loki", "uid": "loki"},
+        "expr": "{service=\"emergency-alert\"}",
+        "legendFormat": ""
+      }],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      }
+    },
+
+    {
+      "id": 13, "title": "Logs ERROR — todos los servicios",
+      "type": "logs",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "gridPos": { "x": 0, "y": 44, "w": 24, "h": 8 },
+      "targets": [{
+        "datasource": {"type": "loki", "uid": "loki"},
+        "expr": "{service=~\"pollution-analytics|auth-service|zone-service|emergency-alert\"} |= \"ERROR\"",
+        "legendFormat": ""
+      }],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      }
+    },
+
+    { "id": 300, "type": "text", "title": "⚙️ PILAR 3 — CONSUMO DE RECURSOS",
+      "gridPos": { "x": 0, "y": 52, "w": 24, "h": 2 },
+      "options": { "content": "## CPU, Memoria JVM, Threads y Garbage Collection", "mode": "markdown" } },
+
+    {
+      "id": 14, "title": "CPU usage por servicio (%)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 54, "w": 12, "h": 8 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "rate(process_cpu_usage[1m]) * 100",
+        "legendFormat": "{{application}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "percent",
+        "thresholds": { "mode": "absolute", "steps": [
+          { "color": "green",  "value": null },
+          { "color": "yellow", "value": 50   },
+          { "color": "red",    "value": 80   }
+        ]}
+      }}
+    },
+
+    {
+      "id": 15, "title": "Memoria JVM Heap usada (MB)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 54, "w": 12, "h": 8 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "jvm_memory_used_bytes{area=\"heap\"} / 1024 / 1024",
+        "legendFormat": "{{application}} heap"
+      }, {
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "jvm_memory_max_bytes{area=\"heap\"} / 1024 / 1024",
+        "legendFormat": "{{application}} max"
+      }],
+      "fieldConfig": { "defaults": { "unit": "megabytes" } }
+    },
+
+    {
+      "id": 16, "title": "Memoria JVM Non-Heap (MB)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 62, "w": 8, "h": 7 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "jvm_memory_used_bytes{area=\"nonheap\"} / 1024 / 1024",
+        "legendFormat": "{{application}} non-heap"
+      }],
+      "fieldConfig": { "defaults": { "unit": "megabytes" } }
+    },
+
+    {
+      "id": 17, "title": "Threads JVM activos",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 62, "w": 8, "h": 7 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "jvm_threads_live_threads",
+        "legendFormat": "{{application}} live"
+      }, {
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "jvm_threads_daemon_threads",
+        "legendFormat": "{{application}} daemon"
+      }],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+
+    {
+      "id": 18, "title": "Garbage Collection — tiempo acumulado (s)",
+      "type": "timeseries",
+      "gridPos": { "x": 16, "y": 62, "w": 8, "h": 7 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "rate(jvm_gc_pause_seconds_sum[1m])",
+        "legendFormat": "{{application}} {{action}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+
+    {
+      "id": 19, "title": "Conexiones DB activas por servicio",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 69, "w": 12, "h": 7 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "hikaricp_connections_active",
+        "legendFormat": "{{application}} activas"
+      }, {
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "hikaricp_connections_idle",
+        "legendFormat": "{{application}} idle"
+      }],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+
+    {
+      "id": 20, "title": "Uptime por servicio (horas)",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 69, "w": 12, "h": 7 },
+      "targets": [{
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "expr": "process_uptime_seconds / 3600",
+        "legendFormat": "{{application}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "h",
+        "color": { "mode": "palette-classic" }
+      }}
+    }
+
+  ]
+}
