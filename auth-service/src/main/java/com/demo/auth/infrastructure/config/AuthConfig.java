@@ -6,13 +6,16 @@ import com.demo.auth.application.port.out.EmailNotifierPort;
 import com.demo.auth.application.port.out.PasswordResetTokenPort;
 import com.demo.auth.infrastructure.adapter.out.JwtTokenAdapter;
 import com.demo.auth.infrastructure.adapter.out.PostgresUserAdapter;
-import com.demo.auth.infrastructure.adapter.out.GmailAuthNotifierAdapter;
+import com.demo.auth.infrastructure.adapter.out.RabbitAuthNotifierAdapter;
 import com.demo.auth.infrastructure.adapter.out.RedisPasswordResetTokenAdapter;
 import com.demo.auth.application.port.out.SubscriptionRepository;
 import com.demo.auth.infrastructure.adapter.out.PostgresSubscriptionAdapter;
 import com.demo.auth.infrastructure.adapter.out.persistence.JpaZoneSubscriptionRepository;
 import com.demo.auth.infrastructure.adapter.out.persistence.JpaUserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +23,6 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -75,14 +77,25 @@ public class AuthConfig {
     }
 
     @Bean
+    public Queue authNotificationQueue(@Value("${auth.notification.queue}") String name) {
+        return QueueBuilder.durable(name)
+                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-routing-key", name + ".dlq")
+                .build();
+    }
+
+    @Bean
+    public Queue authNotificationDlq(@Value("${auth.notification.queue}") String name) {
+        return QueueBuilder.durable(name + ".dlq").build();
+    }
+
+    @Bean
     public EmailNotifierPort emailNotifierPort(
-            JavaMailSender mailSender,
-            @Value("${spring.mail.username}") String fromEmail,
+            RabbitTemplate rabbitTemplate,
+            ObjectMapper objectMapper,
+            @Value("${auth.notification.queue}") String queueName,
             @Value("${app.base-url}") String appBaseUrl) {
-        return new GmailAuthNotifierAdapter(
-            Objects.requireNonNull(mailSender, "mailSender must be provided"),
-            Objects.requireNonNull(fromEmail, "fromEmail must be provided"),
-            Objects.requireNonNull(appBaseUrl, "appBaseUrl must be provided"));
+        return new RabbitAuthNotifierAdapter(rabbitTemplate, objectMapper, queueName, appBaseUrl);
     }
 
     @Bean

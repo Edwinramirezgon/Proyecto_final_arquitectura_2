@@ -59,6 +59,19 @@ public class AlertConfig {
     }
 
     @Bean
+    public Queue authNotificationQueue(@Value("${auth.notification.queue}") String name) {
+        return QueueBuilder.durable(name)
+                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-routing-key", name + ".dlq")
+                .build();
+    }
+
+    @Bean
+    public Queue authNotificationDlq(@Value("${auth.notification.queue}") String name) {
+        return QueueBuilder.durable(name + ".dlq").build();
+    }
+
+    @Bean
     public Queue alertQueue(@Value("${alert.queue.name}") String name) {
         return QueueBuilder.durable(name)
                 .withArgument("x-dead-letter-exchange", "")
