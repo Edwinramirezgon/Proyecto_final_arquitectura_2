@@ -81,9 +81,8 @@ INSERT INTO sensors (sensor_id, name, zone_id, latitude, longitude, active, inst
 -- ZONA-MED-008 Sabaneta
 ('SENSOR-MED-008',   'Sensor Sabaneta A',    'ZONA-MED-008', 6.1513, -75.6169, true, NOW()),
 ('SENSOR-MED-008-B', 'Sensor Sabaneta B',    'ZONA-MED-008', 6.1521, -75.6177, true, NOW()),
-('SENSOR-MED-008-C', 'Sensor Sabaneta C',    'ZONA-MED-008', 6.1505, -75.6161, true, NOW())
+('SENSOR-MED-008-C', 'Sensor Sabaneta C',    'ZONA-MED-008', 6.1505, -75.6161, true, NOW()),
 -- ZONA-HOSPITAL-001 Hospital General de Medellín (prioridad 10 → alerta CRITICAL)
--- Coordenadas exactas del hospital para que /zones/nearest lo detecte dentro del radio 2km
 ('SENSOR-HOSP-001',   'Sensor Hospital General A', 'ZONA-HOSPITAL-001', 6.2526, -75.5696, true, NOW()),
 ('SENSOR-HOSP-001-B', 'Sensor Hospital General B', 'ZONA-HOSPITAL-001', 6.2528, -75.5698, true, NOW()),
 ('SENSOR-HOSP-001-C', 'Sensor Hospital General C', 'ZONA-HOSPITAL-001', 6.2524, -75.5693, true, NOW())

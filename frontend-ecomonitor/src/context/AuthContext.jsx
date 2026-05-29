@@ -1,13 +1,22 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 import { login as apiLogin, logout as apiLogout } from '../api/auth'
+import api from '../api/client'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const u = localStorage.getItem('user')
-    return u ? JSON.parse(u) : null
-  })
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    const stored = localStorage.getItem('user')
+    if (!token || !stored) { setLoading(false); return }
+    api.get('/auth/validate')
+      .then(() => setUser(JSON.parse(stored)))
+      .catch(() => localStorage.clear())
+      .finally(() => setLoading(false))
+  }, [])
 
   async function signIn(username, password) {
     const { data } = await apiLogin(username, password)
@@ -25,7 +34,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, signIn, signOut, loading }}>
       {children}
     </AuthContext.Provider>
   )
